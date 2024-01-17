@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using napp.note.dto;
 using napp.note.model;
+using napp.note.service;
 
 namespace napp.note.controller;
 
@@ -8,24 +10,28 @@ namespace napp.note.controller;
 [ApiController]
 public class NoteController : ControllerBase
 {
-  private readonly DataContext _context;
 
-  public NoteController(DataContext context)
+  private readonly INoteService _noteService;
+
+  public NoteController(
+      INoteService noteService
+  )
   {
-    _context = context;
+    _noteService = noteService;
   }
 
   [HttpGet]
-  public async Task<ActionResult<NoteModel>> Get()
+  public async Task<ActionResult<IEnumerable<NoteModel>>> Get()
   {
-    var notes = await _context.Notes.ToListAsync();
+    IEnumerable<ResponseNoteDto> notes = await _noteService.GetAsync();
+
     return Ok(notes);
   }
 
-  [HttpGet("{Id}")]
-  public async Task<ActionResult<NoteModel>> GetById(int Id)
+  [HttpGet("{id}")]
+  public async Task<ActionResult<ResponseNoteDto>> GetById(int id)
   {
-    var note = await _context.Notes.FindAsync(Id);
+    ResponseNoteDto? note = await _noteService.FindAsync(id);
 
     if (note is null)
     {
@@ -36,43 +42,36 @@ public class NoteController : ControllerBase
   }
 
   [HttpPost]
-  public async Task<ActionResult<NoteModel>> AddNote([FromBody] NoteModel note)
+  public async Task<ActionResult<CreateNoteDto>> AddNote([FromBody] CreateNoteDto noteDto)
   {
-    _context.Notes.Add(note);
+    await _noteService.PostAsync(noteDto);
 
-    await _context.SaveChangesAsync();
-    return Ok(note);
+    return Ok(noteDto);
   }
 
   [HttpPut]
-  public async Task<ActionResult<NoteModel>> UpdateNote(NoteModel note)
+  public async Task<ActionResult> UpdateNote([FromBody] ResponseNoteDto noteDto)
   {
-    var dbNote = _context.Notes.Find(note.Id);
+    bool isSuccessful = await _noteService.PutAsync(noteDto);
 
-    if (dbNote is null)
+    if (isSuccessful is false)
     {
-      return BadRequest("Nota não encontrada");
+      return BadRequest("Nota não atualizada");
     }
 
-    dbNote.Content = note.Content;
-
-    await _context.SaveChangesAsync();
-    return Ok(note);
+    return Ok("Nota atualizada");
   }
 
-  [HttpDelete("{Id}")]
-  public async Task<ActionResult<NoteModel>> Delete(int Id)
+  [HttpDelete("{id}")]
+  public async Task<ActionResult> Delete(int id)
   {
-    var note = await _context.Notes.FindAsync(Id);
+    bool isSuccessful = await _noteService.DeleteAsync(id);
 
-    if (note is null)
+    if (isSuccessful is false)
     {
       return BadRequest("Nota não encontrada");
     }
 
-    _context.Notes.Remove(note);
-
-    await _context.SaveChangesAsync();
     return Ok("Nota removida");
   }
 }
