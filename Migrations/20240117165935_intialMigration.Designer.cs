@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace notes_app.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240111145031_intial")]
-    partial class intial
+    [Migration("20240117165935_intialMigration")]
+    partial class intialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

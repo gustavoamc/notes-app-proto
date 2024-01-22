@@ -20,6 +20,10 @@ public class NoteController : ControllerBase
     _noteService = noteService;
   }
 
+
+  /// <summary> //this type of swagger comment is not working, TODO fix
+  /// Fetches all notes in the db.
+  /// </summary>
   [HttpGet]
   public async Task<ActionResult<IEnumerable<NoteModel>>> Get()
   {
@@ -28,6 +32,10 @@ public class NoteController : ControllerBase
     return Ok(notes);
   }
 
+
+  /// <summary>
+  /// Fetches one note.
+  /// </summary>
   [HttpGet("{id}")]
   public async Task<ActionResult<ResponseNoteDto>> GetById(int id)
   {
@@ -42,11 +50,18 @@ public class NoteController : ControllerBase
   }
 
   [HttpPost]
-  public async Task<ActionResult<CreateNoteDto>> AddNote([FromBody] CreateNoteDto noteDto)
+  public async Task<ActionResult<ResponseNoteDto>> AddNote([FromBody] CreateNoteDto noteDto)
   {
-    await _noteService.PostAsync(noteDto);
+    try
+    {
+      await _noteService.PostAsync(noteDto);
 
-    return Ok(noteDto);
+      return Ok(noteDto);
+    }
+    catch (Exception)
+    {
+      return StatusCode(500, "Ocorreu um erro ao processar a solicitação");
+    }
   }
 
   [HttpPut]
