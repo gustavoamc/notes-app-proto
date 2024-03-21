@@ -71,7 +71,7 @@ public class NoteService : INoteService
 
         _context.Notes.Attach(note);
 
-        note.LastEdited = DateTime.Now;
+        //note.LastEdited = DateTime.UtcNow; doing it now in the front end, for testing //TODO change to do it here if goes to "production"
         note.Content = noteDto.Content;
 
         await _context.SaveChangesAsync();
